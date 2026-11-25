@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#111014">
+    <title>Inventario — Control de almacén</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="brand" href="#" aria-label="Inventario, inicio">
+            <span class="brand-mark"><span></span><span></span><span></span></span>
+            <span>nexo<span class="brand-light">stock</span></span>
+        </a>
+        <p class="side-label">ESPACIO DE TRABAJO</p>
+        <nav class="main-nav" aria-label="Navegación principal">
+            <button class="nav-link active" data-view="dashboard"><span class="nav-icon">⌂</span> Resumen</button>
+            <button class="nav-link" data-view="products"><span class="nav-icon">▦</span> Artículos</button>
+            <button class="nav-link" data-view="movements"><span class="nav-icon">⇄</span> Movimientos</button>
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="connection"><span class="status-dot"></span><span>Inventario conectado</span></div>
+            <div class="profile"><div class="avatar">IN</div><div><strong>Almacén</strong><small>Panel de control</small></div><span class="profile-more">···</span></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="breadcrumb"><span>Almacén</span><span class="crumb-separator">/</span><strong id="current-section">Resumen</strong></div>
+            <div class="topbar-right"><span class="today" id="today-label"></span><span class="top-avatar">IN</span></div>
+        </header>
+
+        <section class="page-heading">
+            <div><p class="eyebrow">PANEL DE INVENTARIO</p><h1 id="page-title">Tu inventario, <span>bajo control.</span></h1>
+                <p class="page-subtitle" id="page-subtitle">Un vistazo claro a las existencias y la actividad de tu almacén.</p></div>
+            <div class="heading-actions"><button class="button button-secondary" id="quick-movement"><span>⇄</span> Registrar movimiento</button><button class="button button-primary" id="new-product"><span>＋</span> Nuevo artículo</button></div>
+        </section>
+
+        <div class="notice notice-error hidden" id="error-banner" role="alert"></div>
+        <div class="notice notice-success hidden" id="success-banner" role="status"></div>
+
+        <section class="view active" id="view-dashboard">
+            <div class="metrics-grid">
+                <article class="metric-card"><div class="metric-top"><span class="metric-label">Valor del inventario</span><span class="metric-icon purple">◈</span></div><strong class="metric-value" id="metric-value">$0</strong><span class="metric-caption">Costo total de existencias</span></article>
+                <article class="metric-card"><div class="metric-top"><span class="metric-label">Artículos registrados</span><span class="metric-icon green">▦</span></div><strong class="metric-value" id="metric-products">0</strong><span class="metric-caption">Referencias activas</span></article>
+                <article class="metric-card"><div class="metric-top"><span class="metric-label">Unidades en almacén</span><span class="metric-icon blue">◌</span></div><strong class="metric-value" id="metric-units">0</strong><span class="metric-caption">Unidades disponibles</span></article>
+                <article class="metric-card metric-warning"><div class="metric-top"><span class="metric-label">Stock bajo</span><span class="metric-icon orange">!</span></div><strong class="metric-value" id="metric-low">0</strong><span class="metric-caption">Requieren atención</span></article>
+            </div>
+
+            <div class="dashboard-grid">
+                <section class="panel panel-wide">
+                    <div class="panel-heading"><div><p class="eyebrow">SEGUIMIENTO</p><h2>Artículos por revisar</h2></div><button class="text-button" data-go="products">Ver artículos <span>↗</span></button></div>
+                    <div id="low-stock-list" class="low-stock-list"></div>
+                </section>
+                <section class="panel activity-panel">
+                    <div class="panel-heading"><div><p class="eyebrow">ÚLTIMOS REGISTROS</p><h2>Actividad reciente</h2></div><button class="icon-button" data-go="movements" aria-label="Ver movimientos">↗</button></div>
+                    <div id="recent-list" class="activity-list"></div>
+                </section>
+            </div>
+            <section class="panel table-panel">
+                <div class="panel-heading"><div><p class="eyebrow">CATÁLOGO</p><h2>Artículos recientes</h2></div><button class="text-button" data-go="products">Ver todos <span>↗</span></button></div>
+                <div class="table-wrap"><table><thead><tr><th>ARTÍCULO</th><th>CATEGORÍA</th><th>PRECIO UNITARIO</th><th>EXISTENCIAS</th><th>VALOR EN STOCK</th><th>ESTADO</th></tr></thead><tbody id="dashboard-products"></tbody></table></div>
+            </section>
+        </section>
+
+        <section class="view" id="view-products">
+            <div class="panel table-panel">
+                <div class="toolbar"><div class="search-wrap"><span>⌕</span><input id="product-search" type="search" placeholder="Buscar por artículo, SKU o categoría"></div><select id="category-filter" aria-label="Filtrar por categoría"><option value="">Todas las categorías</option></select><button class="button button-primary compact" id="products-add"><span>＋</span> Nuevo artículo</button></div>
+                <div class="table-wrap"><table><thead><tr><th>ARTÍCULO</th><th>CATEGORÍA</th><th>PRECIO UNITARIO</th><th>EXISTENCIAS</th><th>VALOR EN STOCK</th><th>ESTADO</th><th class="actions-heading">ACCIONES</th></tr></thead><tbody id="products-table"></tbody></table></div>
+                <div class="table-footer" id="product-count"></div>
+            </div>
+        </section>
+
+        <section class="view" id="view-movements">
+            <div class="panel table-panel">
+                <div class="toolbar"><div><p class="eyebrow">TRAZABILIDAD</p><h2 class="toolbar-title">Historial de movimientos</h2></div><div class="toolbar-controls"><select id="movement-filter" aria-label="Filtrar movimientos"><option value="">Todos los movimientos</option><option value="ENTRY">Entradas</option><option value="EXIT">Salidas</option></select><button class="button button-primary compact" id="movement-add"><span>＋</span> Registrar movimiento</button></div></div>
+                <div class="table-wrap"><table><thead><tr><th>FECHA Y HORA</th><th>ARTÍCULO</th><th>TIPO</th><th>CANTIDAD</th><th>VALOR UNITARIO</th><th>VALOR TOTAL</th><th>NOTA</th></tr></thead><tbody id="movements-table"></tbody></table></div>
+                <div class="table-footer">Se muestran hasta los 200 movimientos más recientes.</div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<dialog id="product-dialog" class="modal">
+    <form id="product-form" method="dialog">
+        <div class="modal-heading"><div><p class="eyebrow">CATÁLOGO</p><h2 id="product-dialog-title">Nuevo artículo</h2></div><button type="button" class="modal-close" data-close aria-label="Cerrar">×</button></div>
+        <input type="hidden" name="id">
+        <div class="form-grid">
+            <label class="field">Nombre del artículo<input name="name" required maxlength="120" placeholder="Ej. Audífonos inalámbricos"></label>
+            <label class="field">Código SKU<input name="sku" required maxlength="50" placeholder="Ej. AUD-001"></label>
+            <label class="field">Categoría<input name="category" required maxlength="80" placeholder="Ej. Audio"></label>
+            <label class="field">Precio unitario (COP)<input name="unitPrice" type="number" min="0" step="0.01" required placeholder="0"></label>
+            <label class="field" id="initial-stock-field">Existencias iniciales<input name="stock" type="number" min="0" step="1" value="0" required></label>
+            <label class="field">Umbral de stock bajo<input name="lowStockThreshold" type="number" min="0" step="1" value="5" required></label>
+            <label class="field field-full">Descripción<textarea name="description" rows="3" maxlength="1000" placeholder="Detalles del artículo (opcional)"></textarea></label>
+        </div>
+        <div class="modal-actions"><button type="button" class="button button-secondary" data-close>Cancelar</button><button class="button button-primary" type="submit">Guardar artículo</button></div>
+    </form>
+</dialog>
+
+<dialog id="movement-dialog" class="modal">
+    <form id="movement-form" method="dialog">
+        <div class="modal-heading"><div><p class="eyebrow">ACTUALIZACIÓN DE STOCK</p><h2>Registrar movimiento</h2></div><button type="button" class="modal-close" data-close aria-label="Cerrar">×</button></div>
+        <div class="form-grid">
+            <label class="field field-full">Artículo<select name="productId" required id="movement-product"></select></label>
+            <label class="field">Tipo de movimiento<select name="type" required><option value="ENTRY">Entrada de mercancía</option><option value="EXIT">Salida de mercancía</option></select></label>
+            <label class="field">Cantidad de unidades<input name="quantity" type="number" min="1" step="1" required value="1"></label>
+            <label class="field field-full">Nota / motivo<input name="note" maxlength="255" placeholder="Ej. Reposición de proveedor (opcional)"></label>
+        </div>
+        <p class="modal-hint" id="movement-stock-hint"></p>
+        <div class="modal-actions"><button type="button" class="button button-secondary" data-close>Cancelar</button><button class="button button-primary" type="submit">Confirmar movimiento</button></div>
+    </form>
+</dialog>
+
+<dialog id="history-dialog" class="modal history-modal">
+    <div class="modal-heading"><div><p class="eyebrow">TRAZABILIDAD</p><h2 id="history-title">Historial del artículo</h2></div><button type="button" class="modal-close" data-close aria-label="Cerrar">×</button></div>
+    <div id="history-content" class="history-list"></div>
+</dialog>
+</body>
+</html>
